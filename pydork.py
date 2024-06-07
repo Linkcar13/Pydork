@@ -1,3 +1,4 @@
+#Libraries Definition
 import argparse
 import requests
 import time
@@ -5,10 +6,10 @@ import sys
 import re
 from bs4 import BeautifulSoup
 import json
-import markdown ## For reporting
-from prettytable import PrettyTable
+from tabulate import tabulate 
+import pandas as pd
 
-# Definición de Colores
+# Color Definition
 
 black="\033[0;30m"
 red="\033[0;31m"
@@ -31,117 +32,17 @@ def print_banner():
     banner = f'''
     {bblue}██████╗ ██╗   ██╗██████╗  ██████╗ ██████╗ ██╗  ██╗    
     {bblue}██╔══██╗╚██╗ ██╔╝██╔══██╗██╔═══██╗██╔══██╗██║ ██╔╝    
-    {yellow}██████╔╝ ╚████╔╝ ██║  ██║██║   ██║██████╔╝█████╔╝     
+    {black}██████╔╝ ╚████╔╝ ██║  ██║██║   ██║██████╔╝█████╔╝     
     {green}██╔═══╝   ╚██╔╝  ██║  ██║██║   ██║██╔══██╗██╔═██╗     
     {red}██║        ██║   ██████╔╝╚██████╔╝██║  ██║██║  ██╗    
-    {red}╚═╝        ╚═╝   ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    
+    {black}╚═╝        ╚═╝   ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    
     {purple}                                by [KalelS] v1.2{nc}
     '''
 
     print(banner)
 
-
-""" if len(sys.argv) != 2:
-    print(f'''{red}[!] Usage: python google_dork.py <domain>''')
-    sys.exit(1) """
-
-""" # Diccionario de dorks más comunes
-dorks = [
-    ##
-    "site:{} ext:doc".format(sys.argv[1]),
-    "site:{} ext:docx".format(sys.argv[1]),
-    "site:{} ext:xls".format(sys.argv[1]),
-    "site:{} ext:xlsx".format(sys.argv[1]),
-    "site:{} ext:ppt".format(sys.argv[1]),
-    "site:{} ext:pptx".format(sys.argv[1]),
-    "site:{} ext:log".format(sys.argv[1]),
-    "site:{} ext:sql".format(sys.argv[1]),
-    "site:{} ext:pdf".format(sys.argv[1]),
-     "site:{} ext:txt".format(sys.argv[1]),
-    ##
-    "site:{} filetype:doc".format(sys.argv[1]),
-    "site:{} filetype:docx".format(sys.argv[1]),
-    "site:{} filetype:xls".format(sys.argv[1]),
-    "site:{} filetype:xlsx".format(sys.argv[1]),
-    "site:{} filetype:ppt".format(sys.argv[1]),
-    "site:{} filetype:pptx".format(sys.argv[1]),
-    "site:{} filetype:log".format(sys.argv[1]),
-    "site:{} filetype:sql".format(sys.argv[1]),
-    "site:{} filetype:pdf".format(sys.argv[1]),
-    "site:{} filetype:txt".format(sys.argv[1]),
-    ##
-    "site:{} inurl:admin intext:password".format(sys.argv[1]),
-    "site:{} intitle:index of".format(sys.argv[1]),
-    "site:{} ext:doc | ext:pdf | ext:docx | ext:txt | ext:xlsx | ext:xls".format(sys.argv[1]),
-    "site:{} inurl:config intext:password".format(sys.argv[1]),
-    "site:{} ext:log".format(sys.argv[1]),
-    "site:{} ext:sql".format(sys.argv[1]),
-    "intitle:password site:{}".format(sys.argv[1]),
-    "intitle:login site:{}".format(sys.argv[1]),
-    "intitle:Index of site:{}".format(sys.argv[1]),
-    "inurl:password site:{}".format(sys.argv[1]),
-    "inurl:login site:{}".format(sys.argv[1]),
-    ##
-    "inurl:{} ext:doc".format(sys.argv[1]),
-    "inurl:{} ext:docx".format(sys.argv[1]),
-    "inurl:{} ext:xls".format(sys.argv[1]),
-    "inurl:{} ext:xlsx".format(sys.argv[1]),
-    "inurl:{} ext:ppt".format(sys.argv[1]),
-    "inurl:{} ext:pptx".format(sys.argv[1]),
-    "inurl:{} ext:pdf".format(sys.argv[1]),
-    "inurl:{} ext:txt".format(sys.argv[1]),
-    "inurl:{} ext:sql".format(sys.argv[1]),
-    "inurl:{} ext:log".format(sys.argv[1]),
-    "related:{} ext:doc".format(sys.argv[1]),
-    "related:{} ext:docx".format(sys.argv[1]),
-    "related:{} ext:xls".format(sys.argv[1]),
-    "related:{} ext:xlsx".format(sys.argv[1]),
-    "related:{} ext:ppt".format(sys.argv[1]),
-    "related:{} ext:pptx".format(sys.argv[1]),
-    "related:{} ext:pdf".format(sys.argv[1]),
-    "related:{} ext:txt".format(sys.argv[1]),
-    "related:{} ext:sql".format(sys.argv[1]),
-    "related:{} ext:log".format(sys.argv[1]),
-    ##
-    "inurl:{} filetype:doc".format(sys.argv[1]),
-    "inurl:{} filetype:docx".format(sys.argv[1]),
-    "inurl:{} filetype:xls".format(sys.argv[1]),
-    "inurl:{} filetype:xlsx".format(sys.argv[1]),
-    "inurl:{} filetype:ppt".format(sys.argv[1]),
-    "inurl:{} filetype:pptx".format(sys.argv[1]),
-    "inurl:{} filetype:pdf".format(sys.argv[1]),
-    "inurl:{} filetype:txt".format(sys.argv[1]),
-    "inurl:{} filetype:log".format(sys.argv[1]),
-    "inurl:{} .env".format(sys.argv[1]),
-    "inurl:{} filetype:sql".format(sys.argv[1]),
-    "inurl:{} config".format(sys.argv[1]),
-    "inurl:{} user".format(sys.argv[1]),
-    "inurl:{} usuario".format(sys.argv[1]),
-    "inurl:{} contraseña".format(sys.argv[1]),
-    "inurl:{} password".format(sys.argv[1]),
-    "related:{} filetype:doc".format(sys.argv[1]),
-    "related:{} filetype:docx".format(sys.argv[1]),
-    "related:{} filetype:xls".format(sys.argv[1]),
-    "related:{} filetype:xlsx".format(sys.argv[1]),
-    "related:{} filetype:ppt".format(sys.argv[1]),
-    "related:{} filetype:pptx".format(sys.argv[1]),
-    "related:{} filetype:pdf".format(sys.argv[1]),
-    "related:{} filetype:txt".format(sys.argv[1]),
-    "related:{} filetype:sql".format(sys.argv[1]),
-    "related:{} filetype:log".format(sys.argv[1]),
-    "related:{} .env".format(sys.argv[1]),
-    "related:{} config".format(sys.argv[1]),
-    "related:{} username".format(sys.argv[1]),
-    "related:{} contraseña".format(sys.argv[1]),
-    "related:{} user".format(sys.argv[1]),
-    "related:{} password".format(sys.argv[1]),
-] """
-
-
-    ## Define domain for search
-    #domain = sys.argv[1]
 def read_file(file):
-    #Custom file of dorks
+    #Custom file of dorks or filters
     try:
         with open(file,'r') as json_file:
             decoded_file = json.load(json_file)
@@ -154,24 +55,24 @@ def read_file(file):
     return decoded_file
 
 def search(domain, file_dorks, file_filters,output):        
-    # Delay para evitar los bloqueos
+    # avoid google ban
     delay = 10
-    relevant_results = dict()
-    results = dict()
+    columns1 = ["dork","Title","Link"]
+    columns2 = ["Title","Link"]
+    relevant_results = pd.DataFrame(columns=columns2)
+    results = pd.DataFrame(columns=columns1)
     dorks = read_file(file_dorks)
     filters = read_file(file_filters)
-    # Se recorre el diccionario de dorks
+    # read dictionary of dorks
     for dork in dorks:
-        # Se establece la query
+        # set query
         query = f"https://www.google.com/search?q={dork.format(domain)}"
         response = requests.get(query)
-        #print(response.text)
+
         if response.status_code == 200:
             print(f'''{blue}[+] Resultados para: '{dork.format(domain)}':\n''')
             soup = BeautifulSoup(response.text, "html.parser")
 
-            #results = soup.find_all("div")
-            #for result in results:
             urls = soup.find_all("div")
             for result in soup.find_all("div"):
                 link = result.find("a")
@@ -185,62 +86,39 @@ def search(domain, file_dorks, file_filters,output):
                     print(f'''{bgreen}[!!] Resultado encontrado:\n''')
                     print(f'''{nc}Title: {title}''')
                     print(f'''{nc}Link: {url}\n''')
-                    results["dork"] = dork
-                    results["Title"] = title
-                    results["Link"] = url
+                    new_result = pd.DataFrame([{
+                        "dork": dork,
+                        "Title": title,
+                        "Link": url
+                    }])
+                    results = pd.concat([results, new_result], ignore_index=True)
 
                     for interesting in filters:
                         if str(interesting) in title or str(interesting) in link:
-                            relevant_results["Title"] = title
-                            relevant_results["Link"] = url
-                    
-                # else:
-                #     print(f"[!!] Resultado encontrado sin enlace:")
-                #     #print(f"Title: {title}\n")
-                #     #print(f"Link: {url}\n")       
+                            new_result_r = pd.DataFrame([{
+                                "Title": title,
+                                "Link": url}])
+                            relevant_results = pd.concat([relevant_results, new_result_r], ignore_index=True)     
         else:
             print(f'''{red}\n [-] Error al econtrar resultados para: '{dork}''')
         time.sleep(delay)
     gen_report(len(dorks),len(results["dork"]),relevant_results,results)
 
-def gen_report(num_dorks,num_results,relevant_results,total_results):
-    
+def gen_report(num_dorks, num_results, relevant_results, total_results):
     print_banner()
-    relevant = PrettyTable()
-    max_length = max(len(column) for column in relevant.values())
 
-    
-    for key in relevant:
-        if len(relevant[key]) < max_length:
-            relevant[key] += [''] * (max_length - len(relevant[key]))
-
-    for key, value in relevant_results.items():
-        relevant.add_column(key, value)
-    print("Interesting Results:")
+    print(f'''{red}Interesting Results:{nc}''')
     print("------------------------------------------------------")
-    print(relevant)
+    print(tabulate(relevant_results, headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
 
-
-    results = PrettyTable()
-
-    max_length2 = max(len(column) for column in results.values())
-
-    
-    for key in results:
-        if len(results[key]) < max_length2:
-            results[key] += [''] * (max_length2 - len(results[key]))
-
-
-    for key, value in total_results.items():
-        results.add_column(key, value)
-    print("Results:")
+    print(f'''{green}Results:''')
     print("------------------------------------------------------")
-    print(results)
+    print(tabulate(total_results, headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
 
-    print(f"dorks executed: {num_dorks}")
-    print(f"total of results: {num_dorks}")
-
-    print("ReportGenrated")
+    # print total operations
+    print(f'''{cyan}dorks executed: {num_dorks}''')
+    print(f'''{purple}total of results: {num_results} {nc}''')
+    print("Report Generated")
 
 
 if __name__ == "__main__":

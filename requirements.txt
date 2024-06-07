@@ -3,4 +3,5 @@ time
 re
 bs4
 json
-markdown
+pandas
+tabulate
