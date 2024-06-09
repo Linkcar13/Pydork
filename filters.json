@@ -7,8 +7,8 @@
     "password",
     "user",
     "config.php",
-    "sql",
-    "log",
+    ".sql",
+    ".log",
     "registro",
     "login",
     "certificado",
@@ -23,5 +23,6 @@
     "personal",
     "Personal",
     "Signed",
-    "signed"
+    "signed",
+    "user"
 ]

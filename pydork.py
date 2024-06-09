@@ -32,10 +32,10 @@ def print_banner():
     banner = f'''
     {bblue}██████╗ ██╗   ██╗██████╗  ██████╗ ██████╗ ██╗  ██╗    
     {bblue}██╔══██╗╚██╗ ██╔╝██╔══██╗██╔═══██╗██╔══██╗██║ ██╔╝    
-    {black}██████╔╝ ╚████╔╝ ██║  ██║██║   ██║██████╔╝█████╔╝     
+    {purple}██████╔╝ ╚████╔╝ ██║  ██║██║   ██║██████╔╝█████╔╝     
     {green}██╔═══╝   ╚██╔╝  ██║  ██║██║   ██║██╔══██╗██╔═██╗     
     {red}██║        ██║   ██████╔╝╚██████╔╝██║  ██║██║  ██╗    
-    {black}╚═╝        ╚═╝   ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    
+    {purple}╚═╝        ╚═╝   ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    
     {purple}                                by [KalelS] v1.2{nc}
     '''
 
@@ -102,23 +102,74 @@ def search(domain, file_dorks, file_filters,output):
         else:
             print(f'''{red}\n [-] Error al econtrar resultados para: '{dork}''')
         time.sleep(delay)
-    gen_report(len(dorks),len(results["dork"]),relevant_results,results)
+    gen_report(len(dorks),len(results["dork"]),relevant_results,results,output,domain)
 
-def gen_report(num_dorks, num_results, relevant_results, total_results):
+def adjust_width(df, widths):
+    df = df.copy()  # Create a copy of original df
+    for col, width in widths.items():
+        df[col] = df[col].astype(str).apply(lambda x: x.ljust(width)[:width])
+    return df    
+
+def gen_report(num_dorks, num_results, relevant_results, total_results,output,domain):
     print_banner()
 
-    print(f'''{red}Interesting Results:{nc}''')
-    print("------------------------------------------------------")
-    print(tabulate(relevant_results, headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
+    widths1 = {
+    "Title": 50,
+    "Link": 160,
+    }
 
-    print(f'''{green}Results:''')
-    print("------------------------------------------------------")
-    print(tabulate(total_results, headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
+    print(f'''{red}
+  ___     _                  _   _                             _ _      
+ |_ _|_ _| |_ ___ _ _ ___ __| |_(_)_ _  __ _   _ _ ___ ____  _| | |_ ___
+  | || ' \  _/ -_) '_/ -_|_-<  _| | ' \/ _` | | '_/ -_|_-< || | |  _(_-<
+ |___|_||_\__\___|_| \___/__/\__|_|_||_\__, | |_| \___/__/\_,_|_|\__/__/
+                                       |___/                            {nc}''')
+    print(tabulate(adjust_width(relevant_results,widths1), headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
+
+    widths2 = {
+    "dork": 20,
+    "Title": 40,
+    "Link": 130
+    }
+
+    print(f'''{green}
+  ___             _ _      
+ | _ \___ ____  _| | |_ ___
+ |   / -_|_-< || | |  _(_-<
+ |_|_\___/__/\_,_|_|\__/__/
+                           
+:{nc}''')
+    print(tabulate(adjust_width(total_results,widths2), headers = 'keys', tablefmt = 'fancy_grid',showindex=False))
 
     # print total operations
     print(f'''{cyan}dorks executed: {num_dorks}''')
     print(f'''{purple}total of results: {num_results} {nc}''')
-    print("Report Generated")
+
+    reporte_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Report for the site {domain} </title>
+          <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <h1 style="text-align:center;">Report for the site {domain}</h1>
+        <h2 style="text-align:center;">Interesting Results</h2>
+        {relevant_results.to_html(index=False,border=0, classes="table table-hover")}
+        <h2 style="text-align:center;">Results</h2>
+        {total_results.to_html(index=False,border=0,classes="table table-hover")}
+    </body>
+    </html>
+    """
+     
+
+    with open(output, "w") as file:
+        file.write(reporte_html)
+
+    print(f"Report Generated on {output}")
 
 
 if __name__ == "__main__":
@@ -128,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument("--domain", required=True, help="Domain for Google Dorking")
     parser.add_argument("--file_dorks", default="dorks.json", help="Path to custom dorks dictionary")
     parser.add_argument("--file_filters", default="filters.json", help="Path to custom filters for results dictionary")
-    parser.add_argument("--output", default="report.md", help="Path to save md report")
+    parser.add_argument("--output", default="report.html", help="Path to save md report")
 
     args = parser.parse_args()
 
